@@ -1,3 +1,7 @@
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 import streamlit as st
 import os
 from populate_database import add_to_chroma as add_to_chroma_pdf, clear_database as clear_database_pdf, load_documents as load_documents_pdf, split_documents as split_documents_pdf
