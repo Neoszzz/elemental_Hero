@@ -1,5 +1,3 @@
-import chromadb
-from chromadb.api import Client
 import os
 import shutil
 import argparse
@@ -8,6 +6,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from get_embedding_function import get_embedding_function
 from langchain.vectorstores.chroma import Chroma
+import chromadb
 
 CHROMA_PATH = "chroma"
 DATA_PATH = "data"
@@ -41,9 +40,8 @@ def split_documents(documents: list[Document]):
 
 def add_to_chroma(chunks: list[Document]):
     # Load the existing database.
-    db = Chroma(
-        persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
-    )
+    embedding_function = get_embedding_function()
+    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
 
     # Calculate Page IDs.
     chunks_with_ids = calculate_chunk_ids(chunks)
