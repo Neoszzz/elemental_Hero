@@ -4,5 +4,5 @@ langchain>=0.0.12
 chromadb
 pytest
 boto3
-langchain-community=0.2.11
+langchain-community==0.2.11
 requests
