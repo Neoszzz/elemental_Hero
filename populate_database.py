@@ -1,7 +1,8 @@
 import chromadb
-from chromadb.api.client import ChromaClient
+from chromadb.api import Client
 import os
 import shutil
+import argparse
 from langchain.document_loaders.pdf import PyPDFDirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
