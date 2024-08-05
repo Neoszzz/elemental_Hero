@@ -2,6 +2,7 @@ streamlit
 pypdf2
 langchain>=0.0.12
 langchain_community==0.2.11
+langchain_chroma>=0.0.9
 chromadb
 pytest
 boto3
