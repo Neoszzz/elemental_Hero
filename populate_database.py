@@ -1,3 +1,7 @@
+import pysqlite3
+import sqlite3
+sqlite3.dbapi2 = pysqlite3.dbapi2
+
 import argparse
 import os
 import shutil
@@ -5,12 +9,17 @@ from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 from get_embedding_function import get_embedding_function
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 
 CHROMA_PATH = "chroma"
 DATA_PATH = "data"
 
 def main():
+    if not os.path.exists(CHROMA_PATH):
+        os.makedirs(CHROMA_PATH)
+    if not os.path.exists(DATA_PATH):
+        os.makedirs(DATA_PATH)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--reset", action="store_true", help="Reset the database.")
     args = parser.parse_args()
@@ -39,9 +48,7 @@ def add_to_chroma(chunks: list[Document]):
     db = Chroma(
         persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
     )
-
     chunks_with_ids = calculate_chunk_ids(chunks)
-
     existing_items = db.get(include=[])
     existing_ids = set(existing_items["ids"])
     print(f"Number of existing documents in DB: {len(existing_ids)}")
@@ -62,7 +69,6 @@ def add_to_chroma(chunks: list[Document]):
 def calculate_chunk_ids(chunks):
     last_page_id = None
     current_chunk_index = 0
-
     for chunk in chunks:
         source = chunk.metadata.get("source")
         page = chunk.metadata.get("page")
