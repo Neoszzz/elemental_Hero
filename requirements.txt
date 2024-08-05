@@ -1,6 +1,6 @@
 streamlit
-pypdf
-langchain
+pypdf2
+langchain>=0.0.12
 chromadb
 pytest
 boto3
