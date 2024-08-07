@@ -1,15 +1,17 @@
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-
 import streamlit as st
 import os
-from populate_database import add_to_chroma as add_to_chroma_pdf, clear_database as clear_database_pdf, load_documents as load_documents_pdf, split_documents as split_documents_pdf
-from md import add_to_chroma as add_to_chroma_md, clear_database as clear_database_md, load_documents as load_documents_md, split_documents as split_documents_md
-from query_data import query_rag
+import subprocess
+from populate_database import add_to_chroma as add_to_chroma_pdf, load_documents as load_documents_pdf, split_documents as split_documents_pdf
+from md import add_to_chroma as add_to_chroma_md, load_documents as load_documents_md, split_documents as split_documents_md
+from query_data import query_rag  # Import query_rag from query_data
 
 CHROMA_PATH = "chroma"
 DATA_PATH = "data"
+
+# Function to reset the database by calling populate_database with --reset
+def clear_database():
+    subprocess.run(["python", "populate_database.py", "--reset"])
+    subprocess.run(["python", "md.py", "--reset"])
 
 # Set up the Streamlit app layout
 st.set_page_config(page_title="RAG-based QA", layout="wide")
@@ -19,8 +21,7 @@ st.title("RAG-based Question Answering System")
 # Sidebar for Database and Document Management
 st.sidebar.header("Database Management")
 if st.sidebar.button("Reset Database"):
-    clear_database_pdf()
-    clear_database_md()
+    clear_database()
     st.sidebar.success("Database has been reset.")
 
 uploaded_files = st.sidebar.file_uploader("Upload documents", type=["txt", "pdf", "md"], accept_multiple_files=True)
@@ -56,29 +57,26 @@ if 'conversation' not in st.session_state:
 
 query_text = st.text_input("Ask a question about the documents", "")
 
-def query_model(question):
-    response = requests.post("https://968f-197-27-65-101.ngrok-free.app/query", json={"question": question})
-    if response.status_code == 200:
-        return response.json().get("answer")
-    else:
-        return "Error querying the model."
-
 if st.button("Ask"):
     if query_text:
-        response = query_model(query_text)
-        st.session_state.conversation.append({
-            'question': query_text,
-            'answer': response
-        })
-        st.write(f"**You:** {query_text}")
-        st.write(f"**Model:** {response}")
+        response = query_rag(query_text)
+        if response:
+            st.session_state.conversation.append({
+                'question': query_text,
+                'answer': response
+            })
+            st.markdown(f"**You:** {query_text}")
+            st.markdown(f"**Neos:** {response}")
+        else:
+            st.markdown("**Neos:** No response received from the assistant.")
 
 # Display the conversation history
 st.subheader("Conversation History")
 for interaction in st.session_state.conversation:
-    st.write(f"**You:** {interaction['question']}")
-    st.write(f"**Model:** {interaction['answer']}")
+    st.markdown(f"**You:** {interaction['question']}")
+    st.markdown(f"**Neos:** {interaction['answer']}")
 
 # Optional: Clear conversation history
 if st.button("Clear Conversation"):
     st.session_state['conversation'] = []
+    st.experimental_rerun()

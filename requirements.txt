@@ -11,5 +11,5 @@ pdfminer.six
 pypdf
 opentelemetry-exporter-otlp
 google
-pysqlite3-binary
+
 protobuf==3.20.3
