@@ -14,40 +14,41 @@ def clear_database():
     subprocess.run(["python", "md.py", "--reset"])
 
 # Set up the Streamlit app layout
-st.set_page_config(page_title="RAG-based QA", layout="wide")
+st.set_page_config(page_title="RAG-based QA", layout="centered")
 
-st.title("RAG-based Question Answering System")
+st.title("Elemental Hero Assistant - Neos")
 
 # Sidebar for Database and Document Management
-st.sidebar.header("Database Management")
-if st.sidebar.button("Reset Database"):
-    clear_database()
-    st.sidebar.success("Database has been reset.")
-
-uploaded_files = st.sidebar.file_uploader("Upload documents", type=["txt", "pdf", "md"], accept_multiple_files=True)
-
-if uploaded_files:
-    for uploaded_file in uploaded_files:
-        file_path = os.path.join(DATA_PATH, uploaded_file.name)
-        with open(file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-    st.sidebar.success("Files uploaded successfully.")
-
-if st.sidebar.button("Process Documents"):
-    pdf_files = [f for f in os.listdir(DATA_PATH) if f.endswith('.pdf')]
-    md_txt_files = [f for f in os.listdir(DATA_PATH) if f.endswith('.md') or f.endswith('.txt')]
-
-    if pdf_files:
-        documents_pdf = load_documents_pdf()
-        chunks_pdf = split_documents_pdf(documents_pdf)
-        add_to_chroma_pdf(chunks_pdf)
-
-    if md_txt_files:
-        documents_md = load_documents_md()
-        chunks_md = split_documents_md(documents_md)
-        add_to_chroma_md(chunks_md)
-
-    st.sidebar.success("Documents processed and added to the database.")
+with st.sidebar:
+    st.header("Database Management")
+    if st.button("Reset Database"):
+        clear_database()
+        st.success("Database has been reset.")
+    
+    uploaded_files = st.file_uploader("Upload documents", type=["txt", "pdf", "md"], accept_multiple_files=True)
+    
+    if uploaded_files:
+        for uploaded_file in uploaded_files:
+            file_path = os.path.join(DATA_PATH, uploaded_file.name)
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+        st.success("Files uploaded successfully.")
+    
+    if st.button("Process Documents"):
+        pdf_files = [f for f in os.listdir(DATA_PATH) if f.endswith('.pdf')]
+        md_txt_files = [f for f in os.listdir(DATA_PATH) if f.endswith('.md') or f.endswith('.txt')]
+    
+        if pdf_files:
+            documents_pdf = load_documents_pdf()
+            chunks_pdf = split_documents_pdf(documents_pdf)
+            add_to_chroma_pdf(chunks_pdf)
+    
+        if md_txt_files:
+            documents_md = load_documents_md()
+            chunks_md = split_documents_md(documents_md)
+            add_to_chroma_md(chunks_md)
+    
+        st.success("Documents processed and added to the database.")
 
 # Main content area for interaction
 st.header("Ask Questions About Your Documents")
